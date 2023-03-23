@@ -10,11 +10,6 @@
         mode: '0644'
         force: true
 
-    # - name: Add Jenkins apt repo key
-    #   ansible.builtin.apt_key:
-    #     url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
-    #     state: present
-
     - name: Add Jenkins apt repository.
       ansible.builtin.apt_repository:
         repo: "deb https://pkg.jenkins.io/debian-stable binary/"
@@ -34,7 +29,6 @@
           - python3-venv
           - pylint
           - python-pytest
-          - python-venv
         state: present
         update_cache: true
 
@@ -44,8 +38,18 @@
         state: present
         update_cache: true
       notify:
-        - restart jenkins
+        - Restart jenkins
+
+    - name: Output Jenkins initial admin password
+      ansible.builtin.command: cat /var/lib/jenkins/secrets/initialAdminPassword
+      register: admin_pw
+
+    - name: Print initial admin password to console
+      ansible.builtin.debug:
+        msg: "{{ admin_pw.stdout }}"
 
   handlers:
-    - name: restart jenkins
-      ansible.builtin.service: name=jenkins state=restarted
+    - name: Restart jenkins
+      ansible.builtin.service: 
+        name: jenkins 
+        state: restarted
